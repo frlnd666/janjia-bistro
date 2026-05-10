@@ -1,70 +1,96 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { formatRupiah } from '@/lib/utils'
+import {
+  ShoppingBag, TrendingUp, Flame, LayoutGrid,
+  ChevronRight, UtensilsCrossed, Users, ClipboardList
+} from 'lucide-react'
 
-type Stats = { totalOrders: number; totalRevenue: number; activeOrders: number; activeTables: number }
+interface Stats {
+  ordersToday: number
+  revenueToday: number
+  activeOrders: number
+  occupiedTables: number
+}
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<Stats>({ totalOrders: 0, totalRevenue: 0, activeOrders: 0, activeTables: 0 })
+  const [stats, setStats] = useState<Stats>({ ordersToday: 0, revenueToday: 0, activeOrders: 0, occupiedTables: 0 })
   const [loading, setLoading] = useState(true)
+
   useEffect(() => {
     async function fetchStats() {
-      const supabase = createClient()
-      const today = new Date(); today.setHours(0, 0, 0, 0)
-      const [ordersRes, activeRes, tablesRes] = await Promise.all([
-        supabase.from('orders').select('total, status').gte('created_at', today.toISOString()),
-        supabase.from('orders').select('id').in('status', ['new', 'preparing', 'ready']),
-        supabase.from('tables').select('id').eq('status', 'occupied'),
-      ])
-      const orders = ordersRes.data ?? []
-      const revenue = orders.filter(o => o.status === 'completed').reduce((acc, o) => acc + o.total, 0)
-      setStats({ totalOrders: orders.length, totalRevenue: revenue, activeOrders: activeRes.data?.length ?? 0, activeTables: tablesRes.data?.length ?? 0 })
-      setLoading(false)
+      try {
+        const supabase = createClient()
+        const today = new Date().toISOString().split('T')[0]
+        const [{ data: ordersToday }, { data: activeOrders }, { data: tables }] = await Promise.all([
+          supabase.from('orders').select('total').gte('created_at', today),
+          supabase.from('orders').select('id').in('status', ['new', 'preparing', 'ready']),
+          supabase.from('tables').select('status').eq('status', 'occupied'),
+        ])
+        setStats({
+          ordersToday: ordersToday?.length ?? 0,
+          revenueToday: ordersToday?.reduce((s, o) => s + (o.total ?? 0), 0) ?? 0,
+          activeOrders: activeOrders?.length ?? 0,
+          occupiedTables: tables?.length ?? 0,
+        })
+      } catch (e) {
+        console.error(e)
+      } finally {
+        setLoading(false)
+      }
     }
     fetchStats()
-    const interval = setInterval(fetchStats, 30000)
-    return () => clearInterval(interval)
   }, [])
 
-  const cards = [
-    { label: 'Pesanan Hari Ini', value: stats.totalOrders.toString(), icon: '🧾', color: 'bg-[#3d2b1f] text-[#f5f0e8]' },
-    { label: 'Pendapatan Hari Ini', value: formatRupiah(stats.totalRevenue), icon: '💰', color: 'bg-[#5c6b3a] text-[#f5f0e8]' },
-    { label: 'Pesanan Aktif', value: stats.activeOrders.toString(), icon: '🔥', color: 'bg-[#c4622d] text-white' },
-    { label: 'Meja Terisi', value: stats.activeTables.toString(), icon: '🪑', color: 'bg-[#6b4c3b] text-[#f5f0e8]' },
+  const statCards = [
+    { label: 'Pesanan Hari Ini', value: stats.ordersToday.toString(), icon: ShoppingBag, color: 'bg-[#1e2a1a] border-[#2d4020]', iconColor: 'text-[#7ab648]' },
+    { label: 'Pendapatan Hari Ini', value: formatRupiah(stats.revenueToday), icon: TrendingUp, color: 'bg-[#1a1e2a] border-[#20283d]', iconColor: 'text-[#4882c4]' },
+    { label: 'Pesanan Aktif', value: stats.activeOrders.toString(), icon: Flame, color: 'bg-[#2a1a14] border-[#3d2010]', iconColor: 'text-[#c4622d]' },
+    { label: 'Meja Terisi', value: stats.occupiedTables.toString(), icon: LayoutGrid, color: 'bg-[#1a1a2a] border-[#28203d]', iconColor: 'text-[#9b6dc4]' },
+  ]
+
+  const quickLinks = [
+    { label: 'Dashboard Dapur', sub: 'Lihat antrian masak', href: '/kitchen', icon: UtensilsCrossed },
+    { label: 'Dashboard Kasir', sub: 'Proses pembayaran', href: '/cashier', icon: ClipboardList },
+    { label: 'Dashboard Pelayan', sub: 'Kelola pesanan meja', href: '/waiter', icon: Users },
   ]
 
   return (
-    <div className="px-4 py-5">
-      <p className="text-xs text-[#c4a882] font-medium uppercase tracking-widest mb-4">Overview Hari Ini</p>
-      {loading ? (
+    <div className="px-4 py-5 space-y-6">
+      {/* Stats Grid */}
+      <div>
+        <p className="text-xs text-[#c4a882] font-medium uppercase tracking-widest mb-3">Overview Hari Ini</p>
         <div className="grid grid-cols-2 gap-3">
-          {[1,2,3,4].map(i => <div key={i} className="h-28 bg-[#e2d9cc] rounded-2xl animate-pulse" />)}
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 gap-3">
-          {cards.map((card, i) => (
-            <motion.div key={card.label} className={`rounded-2xl p-4 ${card.color}`}
-              initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
-              <p className="text-2xl mb-2">{card.icon}</p>
-              <p className="font-bold text-xl leading-tight">{card.value}</p>
-              <p className="text-xs opacity-70 mt-1">{card.label}</p>
-            </motion.div>
+          {statCards.map(({ label, value, icon: Icon, color, iconColor }) => (
+            <div key={label} className={`${color} border rounded-2xl p-4`}>
+              <Icon className={`w-5 h-5 ${iconColor} mb-3`} strokeWidth={1.5} />
+              {loading
+                ? <div className="h-7 w-16 bg-[#2a2016] rounded-lg animate-pulse mb-1" />
+                : <p className="text-2xl font-bold text-white leading-none mb-1">{value}</p>
+              }
+              <p className="text-[#c4a882] text-[11px] leading-tight">{label}</p>
+            </div>
           ))}
         </div>
-      )}
-      <div className="mt-6 bg-white rounded-2xl border border-[#e2d9cc] p-4">
-        <p className="text-sm font-semibold text-[#3d2b1f] mb-2">Akses Cepat Staff</p>
+      </div>
+
+      {/* Quick Links */}
+      <div>
+        <p className="text-xs text-[#c4a882] font-medium uppercase tracking-widest mb-3">Akses Cepat Staff</p>
         <div className="space-y-2">
-          {[
-            { href: '/kitchen', label: '👨‍🍳 Buka Dashboard Dapur' },
-            { href: '/waiter', label: '🛎️ Buka Dashboard Pelayan' },
-          ].map(link => (
-            <a key={link.href} href={link.href} target="_blank" rel="noopener noreferrer"
-              className="flex items-center justify-between px-4 py-3 bg-[#f5f0e8] rounded-xl text-sm text-[#3d2b1f] font-medium border border-[#e2d9cc]">
-              {link.label} <span className="text-[#c4a882]">→</span>
-            </a>
+          {quickLinks.map(({ label, sub, href, icon: Icon }) => (
+            <Link key={href} href={href} className="flex items-center gap-4 bg-[#2a1f14] hover:bg-[#3a2a1a] active:scale-[0.98] border border-[#3d2b1f] rounded-2xl px-4 py-3.5 transition-all">
+              <div className="w-9 h-9 rounded-xl bg-[#1a1108] flex items-center justify-center shrink-0">
+                <Icon className="w-4 h-4 text-[#c4622d]" strokeWidth={1.5} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[#f5f0e8] text-sm font-medium">{label}</p>
+                <p className="text-[#c4a882] text-xs">{sub}</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[#6b4c3b] shrink-0" />
+            </Link>
           ))}
         </div>
       </div>
