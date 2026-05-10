@@ -1,0 +1,15 @@
+export type TableStatus = 'available' | 'occupied'
+export type Table = { id: string; code: string; status: TableStatus; created_at: string }
+export type Session = { id: string; table_id: string; started_at: string; ended_at: string | null }
+export type MenuCategory = { id: string; name: string; sort_order: number }
+export type MenuBadge = 'bestseller' | 'spicy' | 'new' | 'sold_out' | null
+export type MenuItem = { id: string; category_id: string; name: string; description: string | null; price: number; image_url: string | null; available: boolean; badge: MenuBadge; created_at: string }
+export type OrderStatus = 'new' | 'preparing' | 'ready' | 'completed' | 'cancelled'
+export type Order = { id: string; session_id: string; table_id: string; status: OrderStatus; subtotal: number; tax: number; total: number; created_at: string }
+export type OrderItem = { id: string; order_id: string; menu_item_id: string; qty: number; notes: string | null; price: number }
+export type WaiterCallStatus = 'pending' | 'resolved'
+export type WaiterCall = { id: string; table_id: string; status: WaiterCallStatus; created_at: string }
+export type CartItem = { menu_item_id: string; name: string; price: number; qty: number; notes: string; image_url: string | null }
+export type OrderWithItems = Order & { order_items: (OrderItem & { menu_items: Pick<MenuItem, 'name' | 'image_url'> })[]; tables: Pick<Table, 'code'> }
+export type WaiterCallWithTable = WaiterCall & { tables: Pick<Table, 'code'> }
+export type CartSummary = { subtotal: number; tax: number; total: number }
