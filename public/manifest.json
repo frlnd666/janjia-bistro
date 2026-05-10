@@ -1,0 +1,12 @@
+{
+  "name": "JANJIA Bistro & Space",
+  "short_name": "JANJIA",
+  "description": "Pesan makanan langsung dari mejamu",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1108",
+  "theme_color": "#c4622d",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

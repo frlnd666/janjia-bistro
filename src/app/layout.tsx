@@ -1,21 +1,26 @@
 import type { Metadata, Viewport } from 'next'
+import { Inter } from 'next/font/google'
 import './globals.css'
+
+const inter = Inter({ subsets: ['latin'], display: 'swap' })
+
 export const metadata: Metadata = {
   title: 'JANJIA Bistro & Space',
-  description: 'Pesan makanan & minuman langsung dari mejamu',
+  description: 'Pesan makanan langsung dari mejamu',
   manifest: '/manifest.json',
-  appleWebApp: { capable: true, statusBarStyle: 'default', title: 'JANJIA' },
+  icons: { icon: '/favicon.svg', apple: '/favicon.svg' },
 }
-export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#3d2b1f' }
+
+export const viewport: Viewport = {
+  themeColor: '#c4622d',
+  width: 'device-width',
+  initialScale: 1,
+}
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="id">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-      </head>
-      <body>{children}</body>
+      <body className={inter.className}>{children}</body>
     </html>
   )
 }
