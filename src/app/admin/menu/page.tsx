@@ -10,7 +10,8 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Badge } from '@/components/ui/Badge'
 
-const emptyForm = { name: '', description: '', price: '', category_id: '', badge: '' as MenuBadge | '', available: true }
+type BadgeValue = NonNullable<MenuBadge> | ''
+const emptyForm = { name: '', description: '', price: '', category_id: '', badge: '' as BadgeValue, available: true }
 
 export default function AdminMenuPage() {
   const [items, setItems] = useState<MenuItem[]>([])
@@ -43,7 +44,7 @@ export default function AdminMenuPage() {
   }
   function openEdit(item: MenuItem) {
     setEditing(item)
-    setForm({ name: item.name, description: item.description ?? '', price: item.price.toString(), category_id: item.category_id, badge: item.badge ?? '', available: item.available })
+    setForm({ name: item.name, description: item.description ?? '', price: item.price.toString(), category_id: item.category_id, badge: (item.badge ?? '') as BadgeValue, available: item.available })
     setImageFile(null)
     setModalOpen(true)
   }
@@ -114,7 +115,6 @@ export default function AdminMenuPage() {
           </AnimatePresence>
         </div>
       )}
-
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit Menu' : 'Tambah Menu'}>
         <div className="space-y-3">
           <div>
@@ -139,7 +139,7 @@ export default function AdminMenuPage() {
           </div>
           <div>
             <label className="text-xs font-medium text-[#6b4c3b] block mb-1">Badge</label>
-            <select value={form.badge} onChange={e => setForm(f => ({ ...f, badge: e.target.value as MenuBadge | '' }))} className="w-full border border-[#e2d9cc] rounded-xl px-3 py-2.5 text-sm text-[#3d2b1f] bg-[#faf7f2] focus:outline-none focus:border-[#c4622d] min-h-[44px]">
+            <select value={form.badge as string} onChange={e => setForm(f => ({ ...f, badge: e.target.value as BadgeValue }))} className="w-full border border-[#e2d9cc] rounded-xl px-3 py-2.5 text-sm text-[#3d2b1f] bg-[#faf7f2] focus:outline-none focus:border-[#c4622d] min-h-[44px]">
               <option value="">Tidak ada</option>
               <option value="bestseller">⭐ Terlaris</option>
               <option value="new">✨ Baru</option>
