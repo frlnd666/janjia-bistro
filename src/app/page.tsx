@@ -1,92 +1,81 @@
+'use client'
 import Link from 'next/link'
-import { UtensilsCrossed, QrCode, Clock, MapPin, Star, ChevronRight, Wifi } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
+import { UtensilsCrossed, QrCode, Clock, Wifi, Star, ChevronRight, ArrowRight } from 'lucide-react'
 
-export default function HomePage() {
+function HomeContent() {
+  const params = useSearchParams()
+  const tableId = params.get('table')
+
   return (
-    <main className="min-h-screen bg-[#1a1108] text-[#f5f0e8] flex flex-col">
-
-      {/* Hero Section */}
-      <section className="relative flex flex-col items-center justify-center px-6 pt-16 pb-10 overflow-hidden">
-        {/* Background glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-80 bg-[#c4622d] opacity-10 rounded-full blur-3xl pointer-events-none" />
-
-        {/* Logo Mark */}
-        <div className="relative z-10 flex flex-col items-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-[#c4622d] flex items-center justify-center mb-4 shadow-lg shadow-[#c4622d]/30">
-            <UtensilsCrossed className="w-8 h-8 text-white" strokeWidth={1.5} />
-          </div>
-          <p className="text-[#c4a882] text-xs font-medium tracking-[0.3em] uppercase mb-1">Selamat Datang di</p>
-          <h1 className="text-4xl font-bold tracking-tight text-white text-center leading-tight">JANJIA</h1>
-          <p className="text-[#c4a882] text-base tracking-widest mt-0.5">Bistro & Space</p>
+    <div style={{ minHeight:'100dvh', background:'var(--bg)', display:'flex', flexDirection:'column', position:'relative', overflow:'hidden' }}>
+      <div style={{ position:'fixed', top:'-120px', left:'50%', transform:'translateX(-50%)', width:'400px', height:'400px', background:'radial-gradient(circle, rgba(232,114,58,0.12) 0%, transparent 70%)', pointerEvents:'none', zIndex:0 }} />
+      <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'48px 24px 32px', position:'relative', zIndex:1 }}>
+        <div style={{ width:'72px', height:'72px', borderRadius:'24px', background:'linear-gradient(135deg, #e8723a, #c4521a)', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:'24px', boxShadow:'0 20px 60px rgba(232,114,58,0.35)' }}>
+          <UtensilsCrossed size={32} color="white" strokeWidth={1.5} />
         </div>
-
-        {/* Tagline */}
-        <p className="relative z-10 text-center text-[#c4a882] text-sm leading-relaxed max-w-xs mb-10">
-          Nikmati pengalaman bersantap premium.<br />Pesan langsung dari mejamu, mudah & cepat.
-        </p>
-
-        {/* CTA Buttons */}
-        <div className="relative z-10 w-full max-w-xs space-y-3">
-          <Link href="/menu" className="flex items-center justify-between w-full bg-[#c4622d] hover:bg-[#b5521f] active:scale-95 text-white font-semibold py-4 px-5 rounded-2xl transition-all duration-200 shadow-lg shadow-[#c4622d]/30">
-            <div className="flex items-center gap-3">
-              <UtensilsCrossed className="w-5 h-5" strokeWidth={1.5} />
-              <span>Lihat Menu</span>
+        <p style={{ fontSize:'12px', color:'var(--text-muted)', fontWeight:600, letterSpacing:'0.2em', textTransform:'uppercase', marginBottom:'8px' }}>Selamat Datang di</p>
+        <h1 style={{ fontSize:'44px', fontWeight:800, color:'var(--text-primary)', letterSpacing:'-1.5px', lineHeight:1, marginBottom:'6px' }}>JANJIA</h1>
+        <p style={{ fontSize:'15px', color:'var(--accent)', fontWeight:600, letterSpacing:'0.15em', marginBottom:'16px' }}>BISTRO & SPACE</p>
+        <p style={{ fontSize:'14px', color:'var(--text-secondary)', textAlign:'center', maxWidth:'260px', lineHeight:1.6, marginBottom:'40px' }}>Nikmati pengalaman bersantap premium. Pesan langsung dari mejamu.</p>
+        <div style={{ width:'100%', maxWidth:'320px', display:'flex', flexDirection:'column', gap:'12px', marginBottom:'32px' }}>
+          <Link href={tableId ? `/menu?table=${tableId}` : '/menu'} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', background:'var(--accent)', borderRadius:'18px', padding:'18px 22px', textDecoration:'none', boxShadow:'0 8px 32px rgba(232,114,58,0.4)' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
+              <div style={{ width:'36px', height:'36px', borderRadius:'12px', background:'rgba(255,255,255,0.2)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                <UtensilsCrossed size={18} color="white" strokeWidth={1.5} />
+              </div>
+              <div>
+                <p style={{ fontSize:'16px', fontWeight:700, color:'white', lineHeight:1 }}>Lihat Menu</p>
+                <p style={{ fontSize:'11px', color:'rgba(255,255,255,0.7)', marginTop:'2px' }}>Pilih makanan favoritmu</p>
+              </div>
             </div>
-            <ChevronRight className="w-5 h-5 opacity-70" />
+            <ArrowRight size={20} color="white" strokeWidth={2} />
           </Link>
-
-          <Link href="/scan" className="flex items-center justify-between w-full bg-[#2a1f14] hover:bg-[#3a2a1a] active:scale-95 border border-[#3d2b1f] text-[#f5f0e8] font-semibold py-4 px-5 rounded-2xl transition-all duration-200">
-            <div className="flex items-center gap-3">
-              <QrCode className="w-5 h-5 text-[#c4a882]" strokeWidth={1.5} />
-              <span>Scan QR Meja</span>
+          <Link href="/scan" style={{ display:'flex', alignItems:'center', justifyContent:'space-between', background:'var(--surface-2)', borderRadius:'18px', padding:'18px 22px', border:'1px solid var(--border-strong)', textDecoration:'none' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
+              <div style={{ width:'36px', height:'36px', borderRadius:'12px', background:'var(--surface-3)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                <QrCode size={18} color="var(--text-secondary)" strokeWidth={1.5} />
+              </div>
+              <div>
+                <p style={{ fontSize:'16px', fontWeight:600, color:'var(--text-primary)', lineHeight:1 }}>Scan QR Meja</p>
+                <p style={{ fontSize:'11px', color:'var(--text-muted)', marginTop:'2px' }}>Scan untuk pesan di meja</p>
+              </div>
             </div>
-            <ChevronRight className="w-5 h-5 opacity-40" />
+            <ChevronRight size={18} color="var(--text-muted)" strokeWidth={1.5} />
           </Link>
         </div>
-      </section>
-
-      {/* Info Cards */}
-      <section className="px-5 pb-6 grid grid-cols-3 gap-3 max-w-xs mx-auto w-full">
-        {[
-          { icon: Clock, label: 'Buka', value: '10:00 – 22:00' },
-          { icon: Wifi, label: 'WiFi', value: 'Gratis' },
-          { icon: Star, label: 'Rating', value: '4.9 / 5' },
-        ].map(({ icon: Icon, label, value }) => (
-          <div key={label} className="bg-[#2a1f14] border border-[#3d2b1f] rounded-2xl p-3 flex flex-col items-center gap-1.5">
-            <Icon className="w-5 h-5 text-[#c4622d]" strokeWidth={1.5} />
-            <p className="text-[#c4a882] text-[10px] font-medium uppercase tracking-wider">{label}</p>
-            <p className="text-white text-[11px] font-semibold text-center leading-tight">{value}</p>
-          </div>
-        ))}
-      </section>
-
-      {/* How to Order */}
-      <section className="px-5 pb-8 max-w-xs mx-auto w-full">
-        <p className="text-[#c4a882] text-xs font-medium uppercase tracking-widest mb-4 text-center">Cara Memesan</p>
-        <div className="space-y-3">
-          {[
-            { step: '01', icon: QrCode, text: 'Scan QR di meja kamu' },
-            { step: '02', icon: UtensilsCrossed, text: 'Pilih menu favoritmu' },
-            { step: '03', icon: Clock, text: 'Tunggu pesanan datang' },
-            { step: '04', icon: MapPin, text: 'Bayar di kasir saat selesai' },
-          ].map(({ step, icon: Icon, text }) => (
-            <div key={step} className="flex items-center gap-4 bg-[#2a1f14] border border-[#3d2b1f] rounded-2xl px-4 py-3">
-              <span className="text-[#c4622d] font-bold text-sm w-6 shrink-0">{step}</span>
-              <Icon className="w-4 h-4 text-[#c4a882] shrink-0" strokeWidth={1.5} />
-              <p className="text-[#f5f0e8] text-sm">{text}</p>
+        <div style={{ display:'flex', gap:'10px', marginBottom:'40px', flexWrap:'wrap', justifyContent:'center' }}>
+          {[{icon:Clock,label:'10:00 – 22:00'},{icon:Wifi,label:'WiFi Gratis'},{icon:Star,label:'4.9 / 5'}].map(({icon:Icon,label})=>(
+            <div key={label} style={{ display:'flex', alignItems:'center', gap:'6px', background:'var(--surface-2)', borderRadius:'50px', border:'1px solid var(--border)', padding:'8px 14px' }}>
+              <Icon size={13} color="var(--accent)" strokeWidth={1.5} />
+              <span style={{ fontSize:'12px', fontWeight:600, color:'var(--text-secondary)' }}>{label}</span>
             </div>
           ))}
         </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="mt-auto px-5 pb-8 pt-4 border-t border-[#2a1f14] text-center">
-        <p className="text-[#6b4c3b] text-xs">© 2026 JANJIA Bistro & Space</p>
-        <Link href="/login" className="text-[#6b4c3b] text-xs hover:text-[#c4a882] transition-colors mt-1 inline-block">
-          Staff Login
-        </Link>
-      </footer>
-
-    </main>
+        <div style={{ width:'100%', maxWidth:'320px', background:'var(--surface-1)', borderRadius:'20px', border:'1px solid var(--border)', padding:'20px', marginBottom:'24px' }}>
+          <p style={{ fontSize:'11px', color:'var(--text-muted)', fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:'16px' }}>Cara Memesan</p>
+          <div style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
+            {[{n:'01',icon:QrCode,text:'Scan QR di meja kamu'},{n:'02',icon:UtensilsCrossed,text:'Pilih menu favoritmu'},{n:'03',icon:Clock,text:'Tunggu pesanan datang'},{n:'04',icon:Star,text:'Bayar di kasir saat selesai'}].map(({n,icon:Icon,text})=>(
+              <div key={n} style={{ display:'flex', alignItems:'center', gap:'14px' }}>
+                <span style={{ fontSize:'11px', fontWeight:700, color:'var(--text-muted)', minWidth:'20px' }}>{n}</span>
+                <div style={{ width:'32px', height:'32px', borderRadius:'10px', background:'var(--surface-3)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                  <Icon size={15} color="var(--accent)" strokeWidth={1.5} />
+                </div>
+                <p style={{ fontSize:'14px', color:'var(--text-primary)', fontWeight:500 }}>{text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div style={{ textAlign:'center', padding:'16px', position:'relative', zIndex:1 }}>
+        <p style={{ fontSize:'11px', color:'var(--text-muted)' }}>© 2026 JANJIA Bistro & Space</p>
+        <Link href="/login" style={{ fontSize:'11px', color:'var(--text-muted)', marginTop:'4px', display:'block' }}>Staff Login</Link>
+      </div>
+    </div>
   )
+}
+
+export default function HomePage() {
+  return <Suspense fallback={<div style={{minHeight:'100dvh',background:'var(--bg)'}}/>}><HomeContent /></Suspense>
 }
