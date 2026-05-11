@@ -40,7 +40,7 @@ export default function AdminTablesPage() {
     setAdding(true)
     try {
       const sb = createClient()
-      const { error } = await sb.from('tables').insert({ code, status: 'empty' })
+      const { error } = await sb.from('tables').insert({ code, status: 'available' })
       if (error) throw error
       setNewCode('')
       await fetchData()
