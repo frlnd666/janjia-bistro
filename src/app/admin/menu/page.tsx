@@ -26,14 +26,23 @@ export default function AdminMenuPage() {
   const fileRef = useRef<HTMLInputElement>(null)
 
   const fetchData = useCallback(async () => {
-    const sb = createClient()
-    const [m, c] = await Promise.all([
-      sb.from('menu_items').select('*').order('created_at', { ascending: true }),
-      sb.from('categories').select('*').order('name', { ascending: true }),
-    ])
-    setItems(m.data ?? [])
-    setCategories(c.data ?? [])
-    setLoading(false)
+    setLoading(true)
+    try {
+      const sb = createClient()
+      const [m, c] = await Promise.all([
+        sb.from('menu_items').select('*').order('created_at', { ascending: true }),
+        sb.from('menu_categories').select('*').order('name', { ascending: true }),
+      ])
+      if (m.error) throw new Error(`menu_items: ${m.error.message}`)
+      if (c.error) throw new Error(`menu_categories: ${c.error.message}`)
+      setItems(m.data ?? [])
+      setCategories(c.data ?? [])
+    } catch (e) {
+      console.error('fetchData error:', e)
+      alert(e instanceof Error ? e.message : 'Gagal memuat data menu')
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   useEffect(() => { fetchData() }, [fetchData])
@@ -62,11 +71,15 @@ export default function AdminMenuPage() {
   }
 
   async function uploadImage(file: File): Promise<string> {
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+    const preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+    if (!cloudName || !preset) throw new Error('Cloudinary env belum diset')
     const data = new FormData()
     data.append('file', file)
-    data.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!)
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, { method: 'POST', body: data })
+    data.append('upload_preset', preset)
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: 'POST', body: data })
     const json = await res.json()
+    if (!res.ok || !json.secure_url) throw new Error(json?.error?.message || 'Upload gambar gagal')
     return json.secure_url
   }
 
@@ -80,16 +93,18 @@ export default function AdminMenuPage() {
       const payload = {
         name: form.name,
         description: form.description,
-        price: parseInt(form.price.replace(/D/g, '')),
+        price: parseInt(String(form.price).replace(/\D/g, ''), 10),
         category_id: form.category_id || null,
         badge: form.badge || null,
         available: form.available,
         image_url,
       }
       if (editing) {
-        await sb.from('menu_items').update(payload).eq('id', editing.id)
+        const { error } = await sb.from('menu_items').update(payload).eq('id', editing.id)
+        if (error) throw error
       } else {
-        await sb.from('menu_items').insert(payload)
+        const { error } = await sb.from('menu_items').insert(payload)
+        if (error) throw error
       }
       await fetchData()
       setModalOpen(false)
@@ -98,19 +113,33 @@ export default function AdminMenuPage() {
 
   async function toggleAvailable(item: MenuItem) {
     setTogglingId(item.id)
-    const sb = createClient()
-    await sb.from('menu_items').update({ available: !item.available }).eq('id', item.id)
-    await fetchData()
-    setTogglingId(null)
+    try {
+      const sb = createClient()
+      const { error } = await sb.from('menu_items').update({ available: !item.available }).eq('id', item.id)
+      if (error) throw error
+      await fetchData()
+    } catch (e) {
+      console.error('toggleAvailable error:', e)
+      alert(e instanceof Error ? e.message : 'Gagal update status menu')
+    } finally {
+      setTogglingId(null)
+    }
   }
 
   async function deleteItem(id: string) {
     if (!confirm('Hapus menu ini?')) return
     setDeletingId(id)
-    const sb = createClient()
-    await sb.from('menu_items').delete().eq('id', id)
-    await fetchData()
-    setDeletingId(null)
+    try {
+      const sb = createClient()
+      const { error } = await sb.from('menu_items').delete().eq('id', id)
+      if (error) throw error
+      await fetchData()
+    } catch (e) {
+      console.error('deleteItem error:', e)
+      alert(e instanceof Error ? e.message : 'Gagal hapus menu')
+    } finally {
+      setDeletingId(null)
+    }
   }
 
   return (
