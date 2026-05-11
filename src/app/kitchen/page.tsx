@@ -5,7 +5,7 @@ import { formatTime } from '@/lib/utils'
 import { ChefHat, Clock, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
 
 interface OrderItem { id: string; qty: number; notes?: string; menu_items: { name: string } }
-interface Order { id: string; created_at: string; status: string; tables: { code: string }; order_items: OrderItem[] }
+interface Order { id: string; created_at: string; status: string; tables: { code: string }[]; order_items: OrderItem[] }
 
 const statusLabel: Record<string, string> = { new: 'Baru', preparing: 'Dimasak', ready: 'Siap' }
 const statusColor: Record<string, string> = {
