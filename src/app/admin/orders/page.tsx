@@ -15,7 +15,7 @@ const STATUS_COLOR: Record<Status, {bg:string, text:string}> = {
 }
 
 interface OrderItem { id:string; qty:number; menu_items:{name:string} }
-interface Order { id:string; created_at:string; status:Status; total:number; tables:{code:string} | {code:string}[]; order_items:OrderItem[] }
+interface Order { id:string; created_at:string; status:Status; total:number; tables:{code:string}[]; order_items:OrderItem[] }
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
@@ -70,7 +70,7 @@ export default function AdminOrdersPage() {
             {/* Header */}
             <div style={{ padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border)' }}>
               <div>
-                <p style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>Meja {Array.isArray(order.tables) ? order.tables[0]?.code : order.tables.code}</p>
+                <p style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>Meja {order.tables[0]?.code}</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '4px', color: 'var(--text-muted)' }}>
                   <Clock size={12} strokeWidth={1.5} />
                   <span style={{ fontSize: '12px' }}>{formatTime(order.created_at)}</span>

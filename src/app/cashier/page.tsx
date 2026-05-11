@@ -5,7 +5,7 @@ import { formatRupiah, formatTime } from '@/lib/utils'
 import { Receipt, CheckCircle2, Loader2, Banknote, Clock } from 'lucide-react'
 
 interface OrderItem { id:string; qty:number; menu_items:{name:string; price:number} }
-interface Order { id:string; created_at:string; status:string; total:number; tables:{code:string} | {code:string}[]; order_items:OrderItem[] }
+interface Order { id:string; created_at:string; status:string; total:number; tables:{code:string}[]; order_items:OrderItem[] }
 
 export default function CashierPage() {
   const [orders, setOrders] = useState<Order[]>([])
@@ -66,7 +66,7 @@ export default function CashierPage() {
           <div key={order.id} style={{ background:'var(--surface-1)', borderRadius:'20px', border:'1px solid var(--border)', overflow:'hidden' }}>
             <div style={{ padding:'18px 20px', display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1px solid var(--border)' }}>
               <div>
-                <p style={{ fontSize:'20px', fontWeight:700, color:'var(--text-primary)', letterSpacing:'-0.5px' }}>Meja {order.tables.code}</p>
+                <p style={{ fontSize:'20px', fontWeight:700, color:'var(--text-primary)', letterSpacing:'-0.5px' }}>Meja {order.tables[0]?.code}</p>
                 <div style={{ display:'flex', alignItems:'center', gap:'5px', marginTop:'4px', color:'var(--text-muted)' }}>
                   <Clock size={12} strokeWidth={1.5}/>
                   <span style={{ fontSize:'12px' }}>{formatTime(order.created_at)}</span>
