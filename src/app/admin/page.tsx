@@ -3,97 +3,99 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { formatRupiah } from '@/lib/utils'
-import {
-  ShoppingBag, TrendingUp, Flame, LayoutGrid,
-  ChevronRight, UtensilsCrossed, Users, ClipboardList
-} from 'lucide-react'
-
-interface Stats {
-  ordersToday: number
-  revenueToday: number
-  activeOrders: number
-  occupiedTables: number
-}
+import { ShoppingBag, TrendingUp, Flame, LayoutGrid, ChefHat, Receipt, Users, ChevronRight } from 'lucide-react'
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<Stats>({ ordersToday: 0, revenueToday: 0, activeOrders: 0, occupiedTables: 0 })
+  const [stats, setStats] = useState({ ordersToday: 0, revenueToday: 0, activeOrders: 0, occupiedTables: 0 })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function fetchStats() {
+    async function load() {
       try {
-        const supabase = createClient()
+        const sb = createClient()
         const today = new Date().toISOString().split('T')[0]
-        const [{ data: ordersToday }, { data: activeOrders }, { data: tables }] = await Promise.all([
-          supabase.from('orders').select('total').gte('created_at', today),
-          supabase.from('orders').select('id').in('status', ['new', 'preparing', 'ready']),
-          supabase.from('tables').select('status').eq('status', 'occupied'),
+        const [r1, r2, r3] = await Promise.all([
+          sb.from('orders').select('total').gte('created_at', today),
+          sb.from('orders').select('id').in('status', ['new','preparing','ready']),
+          sb.from('tables').select('id').eq('status','occupied'),
         ])
         setStats({
-          ordersToday: ordersToday?.length ?? 0,
-          revenueToday: ordersToday?.reduce((s, o) => s + (o.total ?? 0), 0) ?? 0,
-          activeOrders: activeOrders?.length ?? 0,
-          occupiedTables: tables?.length ?? 0,
+          ordersToday: r1.data?.length ?? 0,
+          revenueToday: r1.data?.reduce((s,o) => s+(o.total??0), 0) ?? 0,
+          activeOrders: r2.data?.length ?? 0,
+          occupiedTables: r3.data?.length ?? 0,
         })
-      } catch (e) {
-        console.error(e)
-      } finally {
-        setLoading(false)
-      }
+      } finally { setLoading(false) }
     }
-    fetchStats()
+    load()
   }, [])
 
-  const statCards = [
-    { label: 'Pesanan Hari Ini', value: stats.ordersToday.toString(), icon: ShoppingBag, color: 'bg-[#1e2a1a] border-[#2d4020]', iconColor: 'text-[#7ab648]' },
-    { label: 'Pendapatan Hari Ini', value: formatRupiah(stats.revenueToday), icon: TrendingUp, color: 'bg-[#1a1e2a] border-[#20283d]', iconColor: 'text-[#4882c4]' },
-    { label: 'Pesanan Aktif', value: stats.activeOrders.toString(), icon: Flame, color: 'bg-[#2a1a14] border-[#3d2010]', iconColor: 'text-[#c4622d]' },
-    { label: 'Meja Terisi', value: stats.occupiedTables.toString(), icon: LayoutGrid, color: 'bg-[#1a1a2a] border-[#28203d]', iconColor: 'text-[#9b6dc4]' },
+  const cards = [
+    { label: 'Pesanan Hari Ini', value: stats.ordersToday.toString(), icon: ShoppingBag, accent: 'var(--green)', dim: 'var(--green-dim)' },
+    { label: 'Pendapatan', value: formatRupiah(stats.revenueToday), icon: TrendingUp, accent: 'var(--blue)', dim: 'var(--blue-dim)' },
+    { label: 'Pesanan Aktif', value: stats.activeOrders.toString(), icon: Flame, accent: 'var(--accent)', dim: 'var(--accent-dim)' },
+    { label: 'Meja Terisi', value: stats.occupiedTables.toString(), icon: LayoutGrid, accent: 'var(--amber)', dim: 'var(--amber-dim)' },
   ]
 
-  const quickLinks = [
-    { label: 'Dashboard Dapur', sub: 'Lihat antrian masak', href: '/kitchen', icon: UtensilsCrossed },
-    { label: 'Dashboard Kasir', sub: 'Proses pembayaran', href: '/cashier', icon: ClipboardList },
-    { label: 'Dashboard Pelayan', sub: 'Kelola pesanan meja', href: '/waiter', icon: Users },
+  const links = [
+    { href: '/kitchen', label: 'Dashboard Dapur', sub: 'Antrian masak realtime', icon: ChefHat, accent: 'var(--accent)' },
+    { href: '/cashier', label: 'Dashboard Kasir', sub: 'Proses pembayaran', icon: Receipt, accent: 'var(--blue)' },
+    { href: '/waiter', label: 'Dashboard Pelayan', sub: 'Kelola pesanan meja', icon: Users, accent: 'var(--green)' },
   ]
 
   return (
-    <div className="px-4 py-5 space-y-6">
-      {/* Stats Grid */}
-      <div>
-        <p className="text-xs text-[#c4a882] font-medium uppercase tracking-widest mb-3">Overview Hari Ini</p>
-        <div className="grid grid-cols-2 gap-3">
-          {statCards.map(({ label, value, icon: Icon, color, iconColor }) => (
-            <div key={label} className={`${color} border rounded-2xl p-4`}>
-              <Icon className={`w-5 h-5 ${iconColor} mb-3`} strokeWidth={1.5} />
+    <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+
+      {/* Stats */}
+      <section>
+        <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '16px' }}>Overview Hari Ini</p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          {cards.map(({ label, value, icon: Icon, accent, dim }) => (
+            <div key={label} style={{
+              background: dim, borderRadius: '20px',
+              border: `1px solid ${accent}30`,
+              padding: '20px 18px',
+            }}>
+              <Icon size={20} color={accent} strokeWidth={1.5} style={{ marginBottom: '16px' }} />
               {loading
-                ? <div className="h-7 w-16 bg-[#2a2016] rounded-lg animate-pulse mb-1" />
-                : <p className="text-2xl font-bold text-white leading-none mb-1">{value}</p>
+                ? <div style={{ height: '32px', width: '60px', background: 'var(--surface-3)', borderRadius: '8px', marginBottom: '6px' }} />
+                : <p style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.5px', lineHeight: 1, marginBottom: '6px' }}>{value}</p>
               }
-              <p className="text-[#c4a882] text-[11px] leading-tight">{label}</p>
+              <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.3 }}>{label}</p>
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
       {/* Quick Links */}
-      <div>
-        <p className="text-xs text-[#c4a882] font-medium uppercase tracking-widest mb-3">Akses Cepat Staff</p>
-        <div className="space-y-2">
-          {quickLinks.map(({ label, sub, href, icon: Icon }) => (
-            <Link key={href} href={href} className="flex items-center gap-4 bg-[#2a1f14] hover:bg-[#3a2a1a] active:scale-[0.98] border border-[#3d2b1f] rounded-2xl px-4 py-3.5 transition-all">
-              <div className="w-9 h-9 rounded-xl bg-[#1a1108] flex items-center justify-center shrink-0">
-                <Icon className="w-4 h-4 text-[#c4622d]" strokeWidth={1.5} />
+      <section>
+        <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '16px' }}>Akses Cepat Staff</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {links.map(({ href, label, sub, icon: Icon, accent }) => (
+            <Link key={href} href={href} style={{
+              display: 'flex', alignItems: 'center', gap: '16px',
+              background: 'var(--surface-1)', borderRadius: '18px',
+              border: '1px solid var(--border)',
+              padding: '18px 20px',
+              transition: 'border-color 0.15s',
+            }}>
+              <div style={{
+                width: '44px', height: '44px', borderRadius: '14px',
+                background: `${accent}20`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0,
+              }}>
+                <Icon size={20} color={accent} strokeWidth={1.5} />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[#f5f0e8] text-sm font-medium">{label}</p>
-                <p className="text-[#c4a882] text-xs">{sub}</p>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>{label}</p>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{sub}</p>
               </div>
-              <ChevronRight className="w-4 h-4 text-[#6b4c3b] shrink-0" />
+              <ChevronRight size={18} color="var(--text-muted)" strokeWidth={1.5} />
             </Link>
           ))}
         </div>
-      </div>
+      </section>
     </div>
   )
 }
