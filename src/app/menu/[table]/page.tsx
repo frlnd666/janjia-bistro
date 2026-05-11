@@ -75,7 +75,7 @@ export default function MenuPage() {
       if (!tableId) throw new Error('Meja tidak ditemukan')
 
       const { data: order, error } = await sb.from('orders').insert({
-        table_id: tableId, status: 'new', total: cartTotal
+        table_id: tableId, status: 'new', total: cartTotal, session_id: crypto.randomUUID()
       }).select('id').single()
       if (error) throw error
 
