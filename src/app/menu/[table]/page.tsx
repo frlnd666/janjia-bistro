@@ -6,7 +6,7 @@ import { formatRupiah } from '@/lib/utils'
 import { ShoppingCart, Plus, Minus, Search, ChevronLeft, X, ArrowRight, Loader2, UtensilsCrossed } from 'lucide-react'
 
 interface Category { id: string; name: string }
-interface MenuItem { id: string; name: string; description: string; price: number; image_url?: string; category_id: string; is_available: boolean; badge?: string }
+interface MenuItem { id: string; name: string; description: string; price: number; image_url?: string; category_id: string; available: boolean; badge?: string }
 type CartItem = MenuItem & { qty: number }
 
 export default function MenuPage() {
@@ -26,8 +26,8 @@ export default function MenuPage() {
     try {
       const sb = createClient()
       const [catRes, itemRes] = await Promise.all([
-        sb.from('menu_categories').select('id,name').order('created_at', { ascending: true }),
-        sb.from('menu_items').select('id,name,description,price,image_url,category_id,is_available,badge').eq('is_available', true).order('created_at', { ascending: true }),
+        sb.from('menu_categories').select('id,name').eq('available', true).order('created_at', { ascending: true }),
+        sb.from('menu_items').select('id,name,description,price,image_url,category_id,available,badge').eq('available', true).order('created_at', { ascending: true }),
       ])
       setCategories(catRes.data ?? [])
       setItems(itemRes.data ?? [])
