@@ -33,7 +33,7 @@ export default function KitchenPage() {
         .in('status', ['new', 'preparing', 'ready'])
         .order('created_at', { ascending: true })
       if (error) throw error
-      setOrders((data as Order[]) ?? [])
+      setOrders((data as unknown as Order[]) ?? [])
     } catch (e) {
       console.error(e)
     } finally {
@@ -93,7 +93,7 @@ export default function KitchenPage() {
             <div key={order.id} className={`border-2 ${statusColor[order.status]} rounded-2xl p-4`}>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <p className="font-bold text-white text-lg">Meja {order.tables.code}</p>
+                  <p className="font-bold text-white text-lg">Meja {order.tables[0]?.code}</p>
                   <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusBadge[order.status]}`}>
                     {statusLabel[order.status]}
                   </span>
