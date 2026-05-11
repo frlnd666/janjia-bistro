@@ -91,7 +91,7 @@ export default function AdminMenuPage() {
         <div className="space-y-3">
           <AnimatePresence>
             {items.map(item => (
-              <motion.div key={item.id} layout className={`bg-white rounded-2xl border border-[#e2d9cc] p-3 flex gap-3 ${!item.available ? 'opacity-50' : ''}`}
+              <motion.div key={item.id} layout className={`bg-[var(--bg)] rounded-2xl border border-[#e2d9cc] p-3 flex gap-3 ${!item.available ? 'opacity-50' : ''}`}
                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
                 <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-[#ede5d8]">
                   {item.image_url
