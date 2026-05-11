@@ -29,7 +29,7 @@ export default function AdminMenuPage() {
     const sb = createClient()
     const [m, c] = await Promise.all([
       sb.from('menu_items').select('*').order('created_at', { ascending: true }),
-      sb.from('menu_categories').select('*').order('created_at', { ascending: true }),
+      sb.from('categories').select('*').order('name', { ascending: true }),
     ])
     setItems(m.data ?? [])
     setCategories(c.data ?? [])
