@@ -5,7 +5,7 @@ import { formatRupiah, formatTime } from '@/lib/utils'
 import { Receipt, CheckCircle2, Loader2, Banknote, Clock } from 'lucide-react'
 
 interface OrderItem { id:string; qty:number; menu_items:{name:string; price:number} }
-interface Order { id:string; created_at:string; status:string; total:number; tables:{code:string}; order_items:OrderItem[] }
+interface Order { id:string; created_at:string; status:string; total:number; tables:{code:string} | {code:string}[]; order_items:OrderItem[] }
 
 export default function CashierPage() {
   const [orders, setOrders] = useState<Order[]>([])
@@ -18,7 +18,7 @@ export default function CashierPage() {
       const { data } = await sb.from('orders')
         .select('id,created_at,status,total,tables(code),order_items(id,qty,menu_items(name,price))')
         .eq('status','ready').order('created_at', { ascending: true })
-      setOrders((data as Order[]) ?? [])
+      setOrders((data as unknown as Order[]) ?? [])
     } finally { setLoading(false) }
   }, [])
 
