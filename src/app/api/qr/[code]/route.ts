@@ -3,10 +3,10 @@ import QRCode from 'qrcode'
 
 export async function GET(
   _req: Request,
-  { params }: { params: { code: string } }
+  context: { params: Promise<{ code: string }> }
 ) {
   try {
-    const rawCode = params.code || 'UNKNOWN'
+    const { code: rawCode = 'UNKNOWN' } = await context.params
     const code = rawCode.toUpperCase()
     const menuUrl = `https://janjia-bistro.vercel.app/menu/${encodeURIComponent(code)}`
 
