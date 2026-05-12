@@ -26,10 +26,12 @@ export async function GET(
     const vbHeight = viewBox[3] || 41
 
     const qrInner = qrSvg
-      .replace(/<?xml.*??>/g, '')
-      .replace(/<!DOCTYPE.*?>/g, '')
+      .replace('<?xml version="1.0" encoding="UTF-8"?>', '')
+      .replace('<?xml version="1.0" standalone="yes"?>', '')
+      .replace('<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">', '')
       .replace(/<svg[^>]*>/, '')
       .replace('</svg>', '')
+      .trim()
 
     const finalSvg = `
 <svg xmlns="http://www.w3.org/2000/svg" width="360" height="420" viewBox="0 0 360 420" fill="none">
@@ -59,6 +61,8 @@ export async function GET(
       },
     })
   } catch (error) {
+    console.error('QR route error:', error)
+
     return NextResponse.json(
       { error: 'Gagal generate QR code' },
       { status: 500 }
@@ -68,9 +72,9 @@ export async function GET(
 
 function escapeXml(value: string) {
   return value
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&apos;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
 }
