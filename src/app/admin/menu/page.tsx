@@ -84,32 +84,44 @@ export default function AdminMenuPage() {
   }
 
   async function handleSave() {
-    if (!form.name || !form.price) return
-    setSaving(true)
-    try {
-      const sb = createClient()
-      let image_url = editing?.image_url ?? null
-      if (imageFile) image_url = await uploadImage(imageFile)
-      const payload = {
-        name: form.name,
-        description: form.description,
-        price: parseInt(String(form.price).replace(/\D/g, ''), 10),
-        category_id: form.category_id || null,
-        badge: form.badge || null,
-        available: form.available,
-        image_url,
-      }
-      if (editing) {
-        const { error } = await sb.from('menu_items').update(payload).eq('id', editing.id)
-        if (error) throw error
-      } else {
-        const { error } = await sb.from('menu_items').insert(payload)
-        if (error) throw error
-      }
-      await fetchData()
-      setModalOpen(false)
-    } finally { setSaving(false) }
+  if (!form.name || !form.price) return
+  setSaving(true)
+  try {
+    const sb = createClient()
+    let image_url = editing?.image_url ?? null
+    if (imageFile) image_url = await uploadImage(imageFile)
+
+    const allowedBadges = ['new', 'promo', 'best'] as const
+    const normalizedBadge = form.badge?.trim().toLowerCase() || null
+    const safeBadge =
+      normalizedBadge && allowedBadges.includes(normalizedBadge as any)
+        ? normalizedBadge
+        : null
+
+    const payload = {
+      name: form.name.trim(),
+      description: form.description?.trim() || null,
+      price: parseInt(String(form.price).replace(/D/g, ''), 10),
+      category_id: form.category_id || null,
+      badge: safeBadge,
+      available: form.available,
+      image_url,
+    }
+
+    if (editing) {
+      const { error } = await sb.from('menu_items').update(payload).eq('id', editing.id)
+      if (error) throw error
+    } else {
+      const { error } = await sb.from('menu_items').insert(payload)
+      if (error) throw error
+    }
+
+    await fetchData()
+    setModalOpen(false)
+  } finally {
+    setSaving(false)
   }
+}
 
   async function toggleAvailable(item: MenuItem) {
     setTogglingId(item.id)
