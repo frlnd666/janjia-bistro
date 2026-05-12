@@ -3,10 +3,12 @@
 export const dynamic = 'force-dynamic'
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Plus, QrCode, Trash2, Loader2, LayoutGrid, X, AlertTriangle, CheckCircle, XCircle } from 'lucide-react'
+import {
+  Plus, QrCode, Trash2, Loader2, LayoutGrid, X,
+  AlertTriangle, CheckCircle, XCircle, Download
+} from 'lucide-react'
 
 interface Table { id: string; code: string; status: string }
-
 type Toast = { id: number; type: 'success' | 'error'; msg: string }
 
 export default function AdminTablesPage() {
@@ -17,6 +19,8 @@ export default function AdminTablesPage() {
   const [deleteTarget, setDeleteTarget] = useState<Table | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [toasts, setToasts] = useState<Toast[]>([])
+  const [qrTarget, setQrTarget] = useState<Table | null>(null)
+  const [downloading, setDownloading] = useState(false)
 
   const toast = (type: 'success' | 'error', msg: string) => {
     const id = Date.now()
@@ -27,7 +31,11 @@ export default function AdminTablesPage() {
   const fetchData = useCallback(async () => {
     const sb = createClient()
     const { data, error } = await sb.from('tables').select('*').order('code')
-    if (error) { toast('error', 'Gagal memuat data: ' + error.message); setLoading(false); return }
+    if (error) {
+      toast('error', 'Gagal memuat data: ' + error.message)
+      setLoading(false)
+      return
+    }
     setTables(data ?? [])
     setLoading(false)
   }, [])
@@ -69,16 +77,37 @@ export default function AdminTablesPage() {
     }
   }
 
+  async function downloadQr(table: Table) {
+    try {
+      setDownloading(true)
+      const res = await fetch(`/api/qr/${encodeURIComponent(table.code)}`)
+      if (!res.ok) throw new Error('QR gagal diunduh')
+      const svg = await res.text()
+      const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `qr-meja-${table.code}.svg`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+      toast('success', `QR meja ${table.code} berhasil diunduh`)
+    } catch (e: any) {
+      toast('error', e?.message ?? 'Gagal download QR')
+    } finally {
+      setDownloading(false)
+    }
+  }
+
   const occupied = tables.filter(t => t.status === 'occupied').length
   const empty = tables.filter(t => t.status !== 'occupied').length
 
   return (
     <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: '28px' }}>
-
-      {/* Toast Stack */}
       <div style={{ position: 'fixed', top: '16px', right: '16px', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: '8px', pointerEvents: 'none' }}>
         {toasts.map(t => (
-          <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: t.type === 'success' ? 'var(--surface-1)' : 'var(--surface-1)', border: `1px solid ${t.type === 'success' ? 'rgba(106,176,76,0.4)' : 'rgba(224,80,80,0.4)'}`, borderRadius: '14px', padding: '12px 16px', boxShadow: '0 8px 32px rgba(0,0,0,0.25)', animation: 'slideIn 0.2s ease', maxWidth: '280px', pointerEvents: 'auto' }}>
+          <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--surface-1)', border: `1px solid ${t.type === 'success' ? 'rgba(106,176,76,0.4)' : 'rgba(224,80,80,0.4)'}`, borderRadius: '14px', padding: '12px 16px', boxShadow: '0 8px 32px rgba(0,0,0,0.25)', maxWidth: '280px', pointerEvents: 'auto' }}>
             {t.type === 'success'
               ? <CheckCircle size={16} color="var(--green)" strokeWidth={2} style={{ flexShrink: 0 }} />
               : <XCircle size={16} color="#e05050" strokeWidth={2} style={{ flexShrink: 0 }} />}
@@ -87,7 +116,65 @@ export default function AdminTablesPage() {
         ))}
       </div>
 
-      {/* Delete Modal */}
+      {qrTarget && (
+        <div
+          onClick={() => setQrTarget(null)}
+          style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 0 24px' }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ width: '100%', maxWidth: '380px', background: 'var(--surface-1)', borderRadius: '24px', border: '1px solid var(--border)', padding: '24px', display: 'flex', flexDirection: 'column', gap: '18px' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <p style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)' }}>QR Meja {qrTarget.code}</p>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>Scan untuk membuka menu meja ini</p>
+              </div>
+              <button
+                onClick={() => setQrTarget(null)}
+                style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'var(--surface-3)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+              >
+                <X size={16} color="var(--text-primary)" />
+              </button>
+            </div>
+
+            <div style={{ background: '#fff', borderRadius: '20px', padding: '18px', border: '1px solid var(--border)', display: 'flex', justifyContent: 'center' }}>
+              <img
+                src={`/api/qr/${encodeURIComponent(qrTarget.code)}`}
+                alt={`QR meja ${qrTarget.code}`}
+                width={260}
+                height={260}
+                style={{ width: '260px', height: '260px', objectFit: 'contain' }}
+              />
+            </div>
+
+            <div style={{ background: 'var(--surface-2)', borderRadius: '16px', padding: '14px 16px', border: '1px solid var(--border)' }}>
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Link tujuan</p>
+              <p style={{ fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.5, wordBreak: 'break-all' }}>
+                {`https://janjia-bistro.vercel.app/menu/${qrTarget.code}`}
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => window.open(`/api/qr/${encodeURIComponent(qrTarget.code)}`, '_blank')}
+                style={{ flex: 1, height: '48px', borderRadius: '14px', background: 'var(--surface-3)', border: '1px solid var(--border)', color: 'var(--text-primary)', fontWeight: 700, fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit' }}
+              >
+                Buka File
+              </button>
+              <button
+                onClick={() => downloadQr(qrTarget)}
+                disabled={downloading}
+                style={{ flex: 1, height: '48px', borderRadius: '14px', background: 'var(--accent)', border: 'none', color: 'white', fontWeight: 700, fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+              >
+                <Download size={16} />
+                {downloading ? 'Mengunduh...' : 'Download'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {deleteTarget && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', padding: '0 0 24px' }}
           onClick={() => setDeleteTarget(null)}>
@@ -103,12 +190,10 @@ export default function AdminTablesPage() {
               </div>
             </div>
             <div style={{ display: 'flex', gap: '10px' }}>
-              <button onClick={() => setDeleteTarget(null)}
-                style={{ flex: 1, height: '48px', borderRadius: '14px', background: 'var(--surface-3)', border: '1px solid var(--border)', color: 'var(--text-primary)', fontWeight: 600, fontSize: '15px', cursor: 'pointer', fontFamily: 'inherit' }}>
+              <button onClick={() => setDeleteTarget(null)} style={{ flex: 1, height: '48px', borderRadius: '14px', background: 'var(--surface-3)', border: '1px solid var(--border)', color: 'var(--text-primary)', fontWeight: 600, fontSize: '15px', cursor: 'pointer', fontFamily: 'inherit' }}>
                 Batal
               </button>
-              <button onClick={confirmDelete}
-                style={{ flex: 1, height: '48px', borderRadius: '14px', background: 'rgba(224,80,80,0.15)', border: '1px solid rgba(224,80,80,0.3)', color: '#e05050', fontWeight: 700, fontSize: '15px', cursor: 'pointer', fontFamily: 'inherit' }}>
+              <button onClick={confirmDelete} style={{ flex: 1, height: '48px', borderRadius: '14px', background: 'rgba(224,80,80,0.15)', border: '1px solid rgba(224,80,80,0.3)', color: '#e05050', fontWeight: 700, fontSize: '15px', cursor: 'pointer', fontFamily: 'inherit' }}>
                 Hapus
               </button>
             </div>
@@ -116,7 +201,6 @@ export default function AdminTablesPage() {
         </div>
       )}
 
-      {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
         <div style={{ background: 'var(--accent-dim)', borderRadius: '20px', border: '1px solid rgba(232,114,58,0.2)', padding: '18px 20px' }}>
           <p style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.5px', lineHeight: 1 }}>{occupied}</p>
@@ -128,7 +212,6 @@ export default function AdminTablesPage() {
         </div>
       </div>
 
-      {/* Add Table */}
       <section>
         <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '14px' }}>Tambah Meja</p>
         <div style={{ display: 'flex', gap: '10px' }}>
@@ -143,20 +226,19 @@ export default function AdminTablesPage() {
           <button
             onClick={addTable}
             disabled={adding || !newCode.trim()}
-            style={{ height: '52px', paddingInline: '20px', borderRadius: '14px', background: adding || !newCode.trim() ? 'var(--surface-3)' : 'var(--accent)', border: 'none', color: adding || !newCode.trim() ? 'var(--text-muted)' : 'white', fontWeight: 700, fontSize: '14px', cursor: adding || !newCode.trim() ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '7px', flexShrink: 0, fontFamily: 'inherit', transition: 'background 0.15s', boxShadow: newCode.trim() ? '0 4px 16px rgba(232,114,58,0.35)' : 'none' }}>
+            style={{ height: '52px', paddingInline: '20px', borderRadius: '14px', background: adding || !newCode.trim() ? 'var(--surface-3)' : 'var(--accent)', border: 'none', color: adding || !newCode.trim() ? 'var(--text-muted)' : 'white', fontWeight: 700, fontSize: '14px', cursor: adding || !newCode.trim() ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '7px', flexShrink: 0, fontFamily: 'inherit' }}>
             {adding ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Plus size={16} strokeWidth={2.5} />}
             Tambah
           </button>
         </div>
       </section>
 
-      {/* Table Grid */}
       <section>
         <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '14px' }}>Semua Meja ({tables.length})</p>
 
         {loading ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-            {[1,2,3,4,5,6].map(i => <div key={i} style={{ height: '110px', background: 'var(--surface-1)', borderRadius: '18px', animation: 'pulse 1.5s ease-in-out infinite' }} />)}
+            {[1,2,3,4,5,6].map(i => <div key={i} style={{ height: '110px', background: 'var(--surface-1)', borderRadius: '18px' }} />)}
           </div>
         ) : tables.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
@@ -172,17 +254,19 @@ export default function AdminTablesPage() {
               const isOccupied = table.status === 'occupied'
               return (
                 <div key={table.id} style={{ background: isOccupied ? 'var(--accent-dim)' : 'var(--surface-1)', borderRadius: '18px', border: `1px solid ${isOccupied ? 'rgba(232,114,58,0.25)' : 'var(--border)'}`, padding: '14px 12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', position: 'relative' }}>
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: isOccupied ? 'var(--accent)' : 'var(--green)', boxShadow: isOccupied ? '0 0 6px var(--accent)' : '0 0 6px var(--green)' }} />
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: isOccupied ? 'var(--accent)' : 'var(--green)' }} />
                   <p style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.5px', lineHeight: 1 }}>{table.code}</p>
                   <span style={{ fontSize: '10px', fontWeight: 600, color: isOccupied ? 'var(--accent)' : 'var(--green)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
                     {isOccupied ? 'Terisi' : 'Kosong'}
                   </span>
                   <div style={{ display: 'flex', gap: '6px', marginTop: '4px', width: '100%' }}>
-                    <a href={`/api/qr/${table.code}`} target="_blank"
-                      style={{ flex: 1, height: '32px', borderRadius: '10px', background: 'var(--surface-3)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', textDecoration: 'none' }}
-                      title="QR Code">
+                    <button
+                      onClick={() => setQrTarget(table)}
+                      style={{ flex: 1, height: '32px', borderRadius: '10px', background: 'var(--surface-3)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                      title="Lihat QR"
+                    >
                       <QrCode size={14} color="var(--text-muted)" strokeWidth={1.5} />
-                    </a>
+                    </button>
                     <button
                       onClick={() => setDeleteTarget(table)}
                       disabled={deletingId === table.id}
@@ -201,8 +285,6 @@ export default function AdminTablesPage() {
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg) } }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(20px) } to { opacity: 1; transform: translateX(0) } }
-        @keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.4 } }
       `}</style>
     </div>
   )
