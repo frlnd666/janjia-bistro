@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
   Plus, QrCode, Trash2, Loader2, LayoutGrid, X,
-  AlertTriangle, CheckCircle, XCircle, Download
+  AlertTriangle, CheckCircle, XCircle, Download, ExternalLink, Copy
 } from 'lucide-react'
 
 interface Table { id: string; code: string; status: string }
@@ -77,6 +77,16 @@ export default function AdminTablesPage() {
     }
   }
 
+  async function copyLink(table: Table) {
+    try {
+      const url = `https://janjia-bistro.vercel.app/menu/${table.code}`
+      await navigator.clipboard.writeText(url)
+      toast('success', `Link meja ${table.code} berhasil disalin`)
+    } catch {
+      toast('error', 'Gagal menyalin link')
+    }
+  }
+
   async function downloadQr(table: Table) {
     try {
       setDownloading(true)
@@ -104,7 +114,7 @@ export default function AdminTablesPage() {
   const empty = tables.filter(t => t.status !== 'occupied').length
 
   return (
-    <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: '28px' }}>
+    <div style={{ padding: '24px 20px 120px', display: 'flex', flexDirection: 'column', gap: '28px' }}>
       <div style={{ position: 'fixed', top: '16px', right: '16px', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: '8px', pointerEvents: 'none' }}>
         {toasts.map(t => (
           <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--surface-1)', border: `1px solid ${t.type === 'success' ? 'rgba(106,176,76,0.4)' : 'rgba(224,80,80,0.4)'}`, borderRadius: '14px', padding: '12px 16px', boxShadow: '0 8px 32px rgba(0,0,0,0.25)', maxWidth: '280px', pointerEvents: 'auto' }}>
@@ -119,58 +129,179 @@ export default function AdminTablesPage() {
       {qrTarget && (
         <div
           onClick={() => setQrTarget(null)}
-          style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 0 24px' }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 1000,
+            background: 'rgba(7,10,18,0.72)',
+            backdropFilter: 'blur(10px)',
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+            padding: '16px'
+          }}
         >
           <div
             onClick={e => e.stopPropagation()}
-            style={{ width: '100%', maxWidth: '380px', background: 'var(--surface-1)', borderRadius: '24px', border: '1px solid var(--border)', padding: '24px', display: 'flex', flexDirection: 'column', gap: '18px' }}
+            style={{
+              width: '100%',
+              maxWidth: '420px',
+              background: 'linear-gradient(180deg, var(--surface-1) 0%, var(--surface-2) 100%)',
+              borderRadius: '28px',
+              border: '1px solid var(--border)',
+              padding: '20px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+              boxShadow: '0 24px 60px rgba(0,0,0,0.32)'
+            }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <p style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)' }}>QR Meja {qrTarget.code}</p>
-                <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>Scan untuk membuka menu meja ini</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 10px', borderRadius: '999px', background: 'var(--surface-3)', border: '1px solid var(--border)' }}>
+                  <QrCode size={14} color="var(--accent)" strokeWidth={2} />
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                    QR Meja
+                  </span>
+                </div>
+                <p style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '12px', letterSpacing: '-0.5px' }}>
+                  Meja {qrTarget.code}
+                </p>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '6px', lineHeight: 1.5 }}>
+                  Scan QR untuk membuka menu meja ini secara langsung.
+                </p>
               </div>
+
               <button
                 onClick={() => setQrTarget(null)}
-                style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'var(--surface-3)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '14px',
+                  background: 'var(--surface-3)',
+                  border: '1px solid var(--border)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  flexShrink: 0
+                }}
               >
-                <X size={16} color="var(--text-primary)" />
+                <X size={17} color="var(--text-primary)" />
               </button>
             </div>
 
-            <div style={{ background: '#fff', borderRadius: '20px', padding: '18px', border: '1px solid var(--border)', display: 'flex', justifyContent: 'center' }}>
+            <div style={{
+              background: 'linear-gradient(180deg, #ffffff 0%, #f8f8f8 100%)',
+              borderRadius: '24px',
+              padding: '18px',
+              border: '1px solid rgba(0,0,0,0.06)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
               <img
                 src={`/api/qr/${encodeURIComponent(qrTarget.code)}`}
                 alt={`QR meja ${qrTarget.code}`}
                 width={260}
                 height={260}
-                style={{ width: '260px', height: '260px', objectFit: 'contain' }}
+                style={{
+                  width: '100%',
+                  maxWidth: '260px',
+                  height: 'auto',
+                  aspectRatio: '1 / 1',
+                  objectFit: 'contain'
+                }}
               />
             </div>
 
-            <div style={{ background: 'var(--surface-2)', borderRadius: '16px', padding: '14px 16px', border: '1px solid var(--border)' }}>
-              <p style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Link tujuan</p>
-              <p style={{ fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.5, wordBreak: 'break-all' }}>
+            <div style={{
+              background: 'var(--surface-3)',
+              borderRadius: '18px',
+              padding: '14px 16px',
+              border: '1px solid var(--border)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px'
+            }}>
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>
+                Link tujuan
+              </p>
+              <p style={{ fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.6, wordBreak: 'break-all' }}>
                 {`https://janjia-bistro.vercel.app/menu/${qrTarget.code}`}
               </p>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               <button
                 onClick={() => window.open(`/api/qr/${encodeURIComponent(qrTarget.code)}`, '_blank')}
-                style={{ flex: 1, height: '48px', borderRadius: '14px', background: 'var(--surface-3)', border: '1px solid var(--border)', color: 'var(--text-primary)', fontWeight: 700, fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit' }}
+                style={{
+                  height: '48px',
+                  borderRadius: '14px',
+                  background: 'var(--surface-3)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-primary)',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
               >
+                <ExternalLink size={16} />
                 Buka File
               </button>
+
               <button
-                onClick={() => downloadQr(qrTarget)}
-                disabled={downloading}
-                style={{ flex: 1, height: '48px', borderRadius: '14px', background: 'var(--accent)', border: 'none', color: 'white', fontWeight: 700, fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                onClick={() => copyLink(qrTarget)}
+                style={{
+                  height: '48px',
+                  borderRadius: '14px',
+                  background: 'var(--surface-3)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-primary)',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
               >
-                <Download size={16} />
-                {downloading ? 'Mengunduh...' : 'Download'}
+                <Copy size={16} />
+                Salin Link
               </button>
             </div>
+
+            <button
+              onClick={() => downloadQr(qrTarget)}
+              disabled={downloading}
+              style={{
+                width: '100%',
+                height: '52px',
+                borderRadius: '16px',
+                background: downloading ? 'var(--surface-3)' : 'var(--accent)',
+                border: 'none',
+                color: downloading ? 'var(--text-muted)' : 'white',
+                fontWeight: 800,
+                fontSize: '14px',
+                cursor: downloading ? 'not-allowed' : 'pointer',
+                fontFamily: 'inherit',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: downloading ? 'none' : '0 14px 32px rgba(232,114,58,0.28)'
+              }}
+            >
+              <Download size={16} />
+              {downloading ? 'Mengunduh QR...' : `Download QR ${qrTarget.code}`}
+            </button>
           </div>
         </div>
       )}
