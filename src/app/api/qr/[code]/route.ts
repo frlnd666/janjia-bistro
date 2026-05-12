@@ -29,7 +29,7 @@ export async function GET(
       .replace(/<?xml.*??>/g, '')
       .replace(/<!DOCTYPE.*?>/g, '')
       .replace(/<svg[^>]*>/, '')
-      .replace(/</svg>/, '')
+      .replace('</svg>', '')
 
     const finalSvg = `
 <svg xmlns="http://www.w3.org/2000/svg" width="360" height="420" viewBox="0 0 360 420" fill="none">
