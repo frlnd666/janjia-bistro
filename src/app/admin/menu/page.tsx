@@ -11,6 +11,21 @@ interface MenuItem { id: string; name: string; description: string; price: numbe
 
 const EMPTY_FORM = { name: '', description: '', price: '', category_id: '', badge: '', available: true }
 
+const BADGE_OPTIONS = [
+  { label: 'Tidak Ada', value: '' },
+  { label: 'Terlaris', value: 'bestseller' },
+  { label: 'Pedas', value: 'spicy' },
+  { label: 'Baru', value: 'new' },
+  { label: 'Sold Out', value: 'sold_out' },
+] as const
+
+const BADGE_LABEL_MAP: Record<string, string> = {
+  bestseller: 'Terlaris',
+  spicy: 'Pedas',
+  new: 'Baru',
+  sold_out: 'Sold Out',
+}
+
 export default function AdminMenuPage() {
   const [items, setItems] = useState<MenuItem[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -57,7 +72,14 @@ export default function AdminMenuPage() {
 
   function openEdit(item: MenuItem) {
     setEditing(item)
-    setForm({ name: item.name, description: item.description ?? '', price: String(item.price), category_id: item.category_id ?? '', badge: item.badge ?? '', available: item.available })
+    setForm({
+      name: item.name,
+      description: item.description ?? '',
+      price: String(item.price),
+      category_id: item.category_id ?? '',
+      badge: item.badge ?? '',
+      available: item.available,
+    })
     setImagePreview(item.image_url ?? '')
     setImageFile(null)
     setModalOpen(true)
@@ -84,44 +106,44 @@ export default function AdminMenuPage() {
   }
 
   async function handleSave() {
-  if (!form.name || !form.price) return
-  setSaving(true)
-  try {
-    const sb = createClient()
-    let image_url = editing?.image_url ?? null
-    if (imageFile) image_url = await uploadImage(imageFile)
+    if (!form.name || !form.price) return
+    setSaving(true)
+    try {
+      const sb = createClient()
+      let image_url = editing?.image_url ?? null
+      if (imageFile) image_url = await uploadImage(imageFile)
 
-    const allowedBadges = ['new', 'promo', 'best'] as const
-    const normalizedBadge = form.badge?.trim().toLowerCase() || null
-    const safeBadge =
-      normalizedBadge && allowedBadges.includes(normalizedBadge as any)
-        ? normalizedBadge
-        : null
+      const allowedBadges = ['bestseller', 'spicy', 'new', 'sold_out'] as const
+      const rawBadge = form.badge?.trim().toLowerCase() || ''
+      const safeBadge = allowedBadges.includes(rawBadge as any) ? rawBadge : null
 
-    const payload = {
-      name: form.name.trim(),
-      description: form.description?.trim() || null,
-      price: parseInt(String(form.price).replace(/D/g, ''), 10),
-      category_id: form.category_id || null,
-      badge: safeBadge,
-      available: form.available,
-      image_url,
+      const payload = {
+        name: form.name.trim(),
+        description: form.description?.trim() || null,
+        price: parseInt(String(form.price).replace(/D/g, ''), 10),
+        category_id: form.category_id || null,
+        badge: safeBadge,
+        available: form.available,
+        image_url,
+      }
+
+      if (editing) {
+        const { error } = await sb.from('menu_items').update(payload).eq('id', editing.id)
+        if (error) throw error
+      } else {
+        const { error } = await sb.from('menu_items').insert(payload)
+        if (error) throw error
+      }
+
+      await fetchData()
+      setModalOpen(false)
+    } catch (e) {
+      console.error('handleSave error:', e)
+      alert(e instanceof Error ? e.message : 'Gagal menyimpan menu')
+    } finally {
+      setSaving(false)
     }
-
-    if (editing) {
-      const { error } = await sb.from('menu_items').update(payload).eq('id', editing.id)
-      if (error) throw error
-    } else {
-      const { error } = await sb.from('menu_items').insert(payload)
-      if (error) throw error
-    }
-
-    await fetchData()
-    setModalOpen(false)
-  } finally {
-    setSaving(false)
   }
-}
 
   async function toggleAvailable(item: MenuItem) {
     setTogglingId(item.id)
@@ -156,8 +178,6 @@ export default function AdminMenuPage() {
 
   return (
     <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-
-      {/* Header row */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Kelola Menu</p>
@@ -169,9 +189,8 @@ export default function AdminMenuPage() {
         </button>
       </div>
 
-      {/* List */}
       {loading ? (
-        [1,2,3].map(i => <div key={i} style={{ height: '100px', background: 'var(--surface-1)', borderRadius: '20px' }} />)
+        [1, 2, 3].map(i => <div key={i} style={{ height: '100px', background: 'var(--surface-1)', borderRadius: '20px' }} />)
       ) : items.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '80px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
           <div style={{ width: '56px', height: '56px', borderRadius: '18px', background: 'var(--surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -182,18 +201,18 @@ export default function AdminMenuPage() {
         </div>
       ) : items.map(item => (
         <div key={item.id} style={{ background: 'var(--surface-1)', borderRadius: '20px', border: '1px solid var(--border)', display: 'flex', overflow: 'hidden', opacity: item.available ? 1 : 0.5 }}>
-          {/* Image */}
           <div style={{ width: '90px', flexShrink: 0, background: 'var(--surface-3)', position: 'relative', minHeight: '100px' }}>
             {item.image_url
               ? <img src={item.image_url} alt={item.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
               : <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🍽</div>
             }
             {item.badge && (
-              <span style={{ position: 'absolute', bottom: '6px', left: '6px', background: 'var(--accent)', color: 'white', fontSize: '8px', fontWeight: 700, padding: '2px 6px', borderRadius: '50px', textTransform: 'uppercase' }}>{item.badge}</span>
+              <span style={{ position: 'absolute', bottom: '6px', left: '6px', background: 'var(--accent)', color: 'white', fontSize: '8px', fontWeight: 700, padding: '2px 6px', borderRadius: '50px', textTransform: 'uppercase' }}>
+                {BADGE_LABEL_MAP[item.badge] ?? item.badge}
+              </span>
             )}
           </div>
 
-          {/* Content */}
           <div style={{ flex: 1, padding: '14px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minWidth: 0 }}>
             <div>
               <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</p>
@@ -215,7 +234,6 @@ export default function AdminMenuPage() {
         </div>
       ))}
 
-      {/* Modal */}
       {modalOpen && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50 }}>
           <div onClick={() => !saving && setModalOpen(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }} />
@@ -229,7 +247,6 @@ export default function AdminMenuPage() {
             </div>
 
             <div style={{ padding: '0 20px 40px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {/* Image upload */}
               <div>
                 <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Foto Menu</p>
                 <button onClick={() => fileRef.current?.click()} style={{ width: '100%', height: '140px', borderRadius: '16px', border: '2px dashed var(--border-strong)', background: 'var(--surface-2)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px', overflow: 'hidden', position: 'relative' }}>
@@ -241,25 +258,21 @@ export default function AdminMenuPage() {
                 <input ref={fileRef} type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
               </div>
 
-              {/* Name */}
               <div>
                 <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Nama Menu *</p>
                 <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Nama menu" style={{ width: '100%', background: 'var(--surface-2)', border: '1px solid var(--border-strong)', borderRadius: '14px', padding: '14px 16px', fontSize: '15px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit' }} />
               </div>
 
-              {/* Description */}
               <div>
                 <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Deskripsi</p>
                 <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Deskripsi singkat..." rows={3} style={{ width: '100%', background: 'var(--surface-2)', border: '1px solid var(--border-strong)', borderRadius: '14px', padding: '14px 16px', fontSize: '15px', color: 'var(--text-primary)', outline: 'none', resize: 'none', fontFamily: 'inherit' }} />
               </div>
 
-              {/* Price */}
               <div>
                 <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Harga (Rp) *</p>
                 <input type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} placeholder="25000" style={{ width: '100%', background: 'var(--surface-2)', border: '1px solid var(--border-strong)', borderRadius: '14px', padding: '14px 16px', fontSize: '15px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit' }} />
               </div>
 
-              {/* Category */}
               <div>
                 <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Kategori</p>
                 <select value={form.category_id} onChange={e => setForm(f => ({ ...f, category_id: e.target.value }))} style={{ width: '100%', background: 'var(--surface-2)', border: '1px solid var(--border-strong)', borderRadius: '14px', padding: '14px 16px', fontSize: '15px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', appearance: 'none' }}>
@@ -268,19 +281,32 @@ export default function AdminMenuPage() {
                 </select>
               </div>
 
-              {/* Badge */}
               <div>
                 <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Badge</p>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {['', 'Terlaris', 'Baru', 'Rekomendasi', 'Promo'].map(b => (
-                    <button key={b} onClick={() => setForm(f => ({ ...f, badge: b }))} style={{ padding: '8px 16px', borderRadius: '50px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', border: 'none', background: form.badge === b ? 'var(--accent)' : 'var(--surface-3)', color: form.badge === b ? 'white' : 'var(--text-secondary)', fontFamily: 'inherit' }}>
-                      {b || 'Tidak Ada'}
+                  {BADGE_OPTIONS.map(option => (
+                    <button
+                      key={option.value || 'none'}
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, badge: option.value }))}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: '50px',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        border: 'none',
+                        background: form.badge === option.value ? 'var(--accent)' : 'var(--surface-3)',
+                        color: form.badge === option.value ? 'white' : 'var(--text-secondary)',
+                        fontFamily: 'inherit'
+                      }}
+                    >
+                      {option.label}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Save */}
               <button onClick={handleSave} disabled={saving || !form.name || !form.price} style={{ width: '100%', height: '56px', borderRadius: '16px', background: form.name && form.price ? 'var(--accent)' : 'var(--surface-3)', border: 'none', color: 'white', fontSize: '16px', fontWeight: 700, cursor: form.name && form.price ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', boxShadow: form.name && form.price ? '0 8px 24px rgba(232,114,58,0.4)' : 'none', fontFamily: 'inherit', opacity: saving ? 0.6 : 1 }}>
                 {saving ? <Loader2 size={20} style={{ animation: 'spin 1s linear infinite' }} /> : null}
                 {saving ? 'Menyimpan...' : editing ? 'Simpan Perubahan' : 'Tambah Menu'}
