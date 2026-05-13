@@ -85,7 +85,6 @@ function HomeContent() {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-           // SESUDAH — ganti dengan ini:
 <Image
   src="/logo.png"
   alt="JANJIA Logo"
