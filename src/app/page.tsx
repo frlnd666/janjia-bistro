@@ -1,10 +1,11 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Suspense, useRef, useState } from 'react'
 import {
-  UtensilsCrossed,
+  
   QrCode,
   Clock3,
   Wifi,
@@ -84,20 +85,19 @@ function HomeContent() {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div
-              style={{
-                width: '46px',
-                height: '46px',
-                borderRadius: '16px',
-                background: 'linear-gradient(135deg, #e8723a, #c4521a)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 14px 30px rgba(232,114,58,0.22)'
-              }}
-            >
-              <UtensilsCrossed size={22} color="white" strokeWidth={1.8} />
-            </div>
+           // SESUDAH — ganti dengan ini:
+<Image
+  src="/logo.png"
+  alt="JANJIA Logo"
+  width={46}
+  height={46}
+  priority
+  style={{
+    borderRadius: '16px',
+    objectFit: 'contain',
+    boxShadow: '0 14px 30px rgba(232,114,58,0.22)'
+  }}
+/>
             <div>
               <p style={{ fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700 }}>
                 JANJIA
