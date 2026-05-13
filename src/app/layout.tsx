@@ -6,11 +6,10 @@ export const metadata: Metadata = {
   title: 'JANJIA Bistro & Space',
   description: 'Pesan makanan langsung dari mejamu',
   manifest: '/manifest.json',
-  icons: { icon: '/favicon.svg' },
 }
 
 export const viewport: Viewport = {
-  themeColor: '#0f0b07',
+  themeColor: '#c4622d',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -22,6 +21,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {children}
         <InstallPrompt />
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            if ('serviceWorker' in navigator) {
+              window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js');
+              });
+            }
+          `
+        }} />
       </body>
     </html>
   )
