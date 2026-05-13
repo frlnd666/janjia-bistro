@@ -407,100 +407,130 @@ function HomeContent() {
 
           <section
             style={{
-              background: 'var(--surface-1)',
-              border: '1px solid var(--border)',
+              position: 'relative',
+              overflow: 'hidden',
               borderRadius: '30px',
-              padding: '20px',
-              boxShadow: '0 16px 40px rgba(40,24,16,0.04)'
+              minHeight: '260px',
+              backgroundImage: "linear-gradient(180deg, rgba(20,14,10,0.18) 0%, rgba(20,14,10,0.72) 100%), url('/images/about-janjia.jpg')",
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              border: '1px solid rgba(255,255,255,0.08)',
+              boxShadow: '0 16px 40px rgba(40,24,16,0.08)'
             }}
           >
-            <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: '10px' }}>
-              About Janjia
-            </p>
-            <h2 style={{ fontSize: '26px', lineHeight: 1.08, letterSpacing: '-1px', color: 'var(--text-primary)', fontWeight: 900, margin: 0 }}>
-              Tempat makan yang terasa hangat, tenang, dan tetap berkelas.
-            </h2>
-            <p style={{ marginTop: '12px', fontSize: '14px', lineHeight: 1.8, color: 'var(--text-secondary)' }}>
-              Kami merancang pengalaman makan yang sederhana namun berkesan — dari ambience, pelayanan, hingga menu yang nyaman dinikmati kapan saja.
-            </p>
+            <div
+              style={{
+                padding: '22px 20px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-end',
+                minHeight: '260px'
+              }}
+            >
+              <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.72)', fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: '10px' }}>
+                About Janjia
+              </p>
+              <h2 style={{ fontSize: '26px', lineHeight: 1.08, letterSpacing: '-1px', color: 'white', fontWeight: 900, margin: 0, maxWidth: '290px' }}>
+                Tempat makan yang terasa hangat, tenang, dan tetap berkelas.
+              </h2>
+              <p style={{ marginTop: '12px', fontSize: '14px', lineHeight: 1.8, color: 'rgba(255,255,255,0.82)', maxWidth: '310px' }}>
+                Kami merancang pengalaman makan yang sederhana namun berkesan — dari ambience, pelayanan, hingga menu yang nyaman dinikmati kapan saja.
+              </p>
 
-            <div style={{ display: 'flex', gap: '10px', marginTop: '18px', flexWrap: 'wrap' }}>
-              {[{ icon: Clock3, label: '10:00 – 22:00' }, { icon: Wifi, label: 'WiFi Gratis' }, { icon: Star, label: '4.9 / 5' }].map(({ icon: Icon, label }) => (
-                <div
-                  key={label}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '7px',
-                    background: 'var(--surface-2)',
-                    borderRadius: '999px',
-                    border: '1px solid var(--border)',
-                    padding: '9px 14px'
-                  }}
-                >
-                  <Icon size={13} color="var(--accent)" strokeWidth={1.8} />
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)' }}>{label}</span>
-                </div>
-              ))}
+              <div style={{ display: 'flex', gap: '10px', marginTop: '18px', flexWrap: 'wrap' }}>
+                {[{ icon: Clock3, label: '10:00 – 22:00' }, { icon: Wifi, label: 'WiFi Gratis' }, { icon: Star, label: '4.9 / 5' }].map(({ icon: Icon, label }) => (
+                  <div
+                    key={label}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '7px',
+                      background: 'rgba(255,255,255,0.12)',
+                      backdropFilter: 'blur(8px)',
+                      borderRadius: '999px',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      padding: '9px 14px'
+                    }}
+                  >
+                    <Icon size={13} color="#ffd6c3" strokeWidth={1.8} />
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: 'white' }}>{label}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </section>
 
           <section
             style={{
-              background: 'linear-gradient(180deg, rgba(232,114,58,0.10), rgba(255,248,242,0.88))',
-              border: '1px solid rgba(232,114,58,0.14)',
+              position: 'relative',
+              overflow: 'hidden',
               borderRadius: '30px',
-              padding: '22px 20px'
+              minHeight: '280px',
+              backgroundImage: "linear-gradient(180deg, rgba(232,114,58,0.08) 0%, rgba(25,16,12,0.82) 100%), url('/images/quick-start.jpg')",
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              border: '1px solid rgba(232,114,58,0.14)'
             }}
           >
-            <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: '10px' }}>
-              Quick Start
-            </p>
-            <h2 style={{ fontSize: '24px', lineHeight: 1.1, letterSpacing: '-0.9px', color: 'var(--text-primary)', fontWeight: 900, margin: 0 }}>
-              Duduk, scan, lalu pesan tanpa ribet.
-            </h2>
-            <p style={{ marginTop: '12px', fontSize: '14px', lineHeight: 1.75, color: 'var(--text-secondary)' }}>
-              Kalau sudah ada di meja, cukup scan QR atau masukkan kode meja untuk langsung membuka menu digital Janjia.
-            </p>
+            <div
+              style={{
+                padding: '22px 20px',
+                minHeight: '280px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-end'
+              }}
+            >
+              <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.74)', fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: '10px' }}>
+                Quick Start
+              </p>
+              <h2 style={{ fontSize: '24px', lineHeight: 1.1, letterSpacing: '-0.9px', color: 'white', fontWeight: 900, margin: 0, maxWidth: '290px' }}>
+                Duduk, scan, lalu pesan tanpa ribet.
+              </h2>
+              <p style={{ marginTop: '12px', fontSize: '14px', lineHeight: 1.75, color: 'rgba(255,255,255,0.82)', maxWidth: '310px' }}>
+                Kalau sudah ada di meja, cukup scan QR atau masukkan kode meja untuk langsung membuka menu digital Janjia.
+              </p>
 
-            <div style={{ display: 'grid', gap: '10px', marginTop: '18px' }}>
-              {[
-                'Scan QR di meja kamu.',
-                'Atau masukkan kode meja secara manual.',
-                'Pilih menu favorit dan kirim pesanan langsung.'
-              ].map(step => (
-                <div
-                  key={step}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    background: 'rgba(255,255,255,0.55)',
-                    border: '1px solid rgba(232,114,58,0.12)',
-                    borderRadius: '18px',
-                    padding: '14px 14px'
-                  }}
-                >
+              <div style={{ display: 'grid', gap: '10px', marginTop: '18px' }}>
+                {[
+                  'Scan QR di meja kamu.',
+                  'Atau masukkan kode meja secara manual.',
+                  'Pilih menu favorit dan kirim pesanan langsung.'
+                ].map(step => (
                   <div
+                    key={step}
                     style={{
-                      width: '28px',
-                      height: '28px',
-                      borderRadius: '999px',
-                      background: 'var(--accent)',
-                      color: 'white',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '12px',
-                      fontWeight: 800,
-                      flexShrink: 0
+                      gap: '10px',
+                      background: 'rgba(255,255,255,0.12)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(255,255,255,0.10)',
+                      borderRadius: '18px',
+                      padding: '14px 14px'
                     }}
                   >
-                    •
+                    <div
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '999px',
+                        background: 'var(--accent)',
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '12px',
+                        fontWeight: 800,
+                        flexShrink: 0
+                      }}
+                    >
+                      •
+                    </div>
+                    <p style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: 'white' }}>{step}</p>
                   </div>
-                  <p style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>{step}</p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </section>
         </main>
