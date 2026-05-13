@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: 'JANJIA Bistro & Space',
   description: 'Pesan makanan langsung dari mejamu',
   manifest: '/manifest.json',
-icons: { icon: '/logo.png' },
+  icons: { icon: '/logo.png' },
 }
 
 export const viewport: Viewport = {
@@ -23,13 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <InstallPrompt />
         <script dangerouslySetInnerHTML={{
-          __html: `
-            if ('serviceWorker' in navigator) {
-              window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js');
-              });
-            }
-          `
+          __html: `if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js')})}`
         }} />
       </body>
     </html>
