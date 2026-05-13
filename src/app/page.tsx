@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Suspense, useRef, useState } from 'react'
 import {
-  
+UtensilsCrossed,
   QrCode,
   Clock3,
   Wifi,
