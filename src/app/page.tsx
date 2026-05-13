@@ -483,6 +483,96 @@ function HomeContent() {
 
           <section
             style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '14px'
+            }}
+          >
+            <div>
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: '10px' }}>
+                Gallery
+              </p>
+              <h2 style={{ fontSize: '24px', lineHeight: 1.08, letterSpacing: '-0.8px', color: 'var(--text-primary)', fontWeight: 900, margin: 0 }}>
+                Sudut hangat dari Janjia.
+              </h2>
+              <p style={{ marginTop: '10px', fontSize: '14px', lineHeight: 1.8, color: 'var(--text-secondary)', maxWidth: '32rem' }}>
+                Beberapa potret suasana, meja, dan ambience yang membuat pengalaman makan di Janjia terasa lebih dekat dan nyaman.
+              </p>
+            </div>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '12px'
+              }}
+            >
+              {[
+                { src: '/images/janjia1.jpg', title: 'Dining Corner', height: '210px' },
+                { src: '/images/janjia2.jpg', title: 'Table Setup', height: '160px' },
+                { src: '/images/janjia3.jpg', title: 'Warm Ambience', height: '160px' },
+                { src: '/images/janjia4.jpg', title: 'Janjia Moments', height: '210px' }
+              ].map((photo) => (
+                <div
+                  key={photo.title}
+                  style={{
+                    position: 'relative',
+                    overflow: 'hidden',
+                    borderRadius: '24px',
+                    height: photo.height,
+                    background: 'var(--surface-2)',
+                    border: '1px solid var(--border)',
+                    boxShadow: '0 14px 30px rgba(40,24,16,0.06)'
+                  }}
+                >
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      backgroundImage: `url('${photo.src}')`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      transform: 'scale(1.03)'
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: 'linear-gradient(180deg, rgba(20,14,10,0.06) 0%, rgba(20,14,10,0.55) 100%)'
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: '12px',
+                      right: '12px',
+                      bottom: '12px'
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        padding: '8px 10px',
+                        borderRadius: '999px',
+                        background: 'rgba(255,255,255,0.14)',
+                        backdropFilter: 'blur(8px)',
+                        border: '1px solid rgba(255,255,255,0.14)'
+                      }}
+                    >
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: 'white', letterSpacing: '0.04em' }}>
+                        {photo.title}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section
+            style={{
               position: 'relative',
               overflow: 'hidden',
               borderRadius: '30px',
