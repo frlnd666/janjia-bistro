@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: 'JANJIA Bistro & Space',
   description: 'Pesan makanan langsung dari mejamu',
   manifest: '/manifest.json',
+icons: { icon: '/logo.png' },
 }
 
 export const viewport: Viewport = {
